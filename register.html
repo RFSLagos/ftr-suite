@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RFS Student Registration</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --accent:       #2D6A2D;
+            --accent-dim:   rgba(45,106,45,0.10);
+            --success-bg:   #EAF5E4;
+            --success-text: #1A5C1A;
+            --error-bg:     #FEF0F0;
+            --error-text:   #C0392B;
+            --warning-bg:   #FEF9E7;
+            --warning-text: #7D5A00;
+            --text:         #1A2010;
+            --text-2:       #4A5540;
+            --text-3:       #8A9A80;
+            --border:       rgba(0,0,0,0.09);
+            --surface:      #F3F5F0;
+            --card:         #FFFFFF;
+            --r-sm: 8px; --r-md: 12px; --r-lg: 20px;
+            --shadow: 0 2px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05);
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: #EEF0EB;
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 32px 16px 48px;
+            position: relative;
+            overflow-x: hidden;
+            color: var(--text);
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: var(--r-lg);
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 480px;
+            overflow: hidden;
+            animation: rise 0.4s cubic-bezier(.22,.68,0,1.2) both;
+        }
+        @keyframes rise {
+            from { opacity:0; transform: translateY(20px) scale(0.97); }
+            to   { opacity:1; transform: none; }
+        }
+
+        /* ── Header ── */
+        .card-header { padding: 26px 28px 20px; border-bottom: 1px solid var(--border); }
+        .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+        .brand-divider { width: 1px; height: 30px; background: rgba(0,0,0,0.12); flex-shrink: 0; }
+        .brand-text { display: flex; flex-direction: column; gap: 2px; }
+        .brand-name   { font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #26361b; }
+        .brand-school { font-size: 10px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: #7ac042; }
+        .card-title   { font-size: 21px; font-weight: 700; color: var(--text); line-height: 1.2; }
+        .card-sub     { font-size: 13px; color: var(--text-3); margin-top: 5px; line-height: 1.5; }
+
+        /* ── Stream badge ── */
+        .stream-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: var(--accent-dim); color: var(--accent);
+            font-size: 11px; font-weight: 600; letter-spacing: 0.05em;
+            text-transform: uppercase; padding: 4px 11px;
+            border-radius: 99px; margin-top: 10px;
+        }
+        .stream-badge.loading { background: var(--surface); color: var(--text-3); }
+        .stream-badge.error   { background: var(--error-bg); color: var(--error-text); }
+
+        /* ── Body ── */
+        .card-body { padding: 24px 28px 28px; }
+
+        /* ── Section label ── */
+        .section-label {
+            font-size: 11px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.07em; color: var(--text-3);
+            margin: 20px 0 12px; padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+        .section-label:first-child { margin-top: 0; }
+
+        /* ── Fields ── */
+        .field-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .field        { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+        .field:last-child { margin-bottom: 0; }
+        .field label  { font-size: 12px; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.05em; }
+        .field .hint  { font-size: 11px; color: var(--text-3); margin-top: 3px; }
+        .required-star { color: var(--error-text); margin-left: 2px; }
+        .err-text { font-size: 11px; color: var(--error-text); display: none; margin-top: 2px; }
+        .err-text.show { display: block; }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="date"],
+        select {
+            width: 100%; height: 44px; padding: 0 13px;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--r-sm);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px; font-weight: 500;
+            color: var(--text); outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+            -webkit-appearance: none;
+        }
+        input:focus, select:focus {
+            border-color: var(--accent);
+            background: #fff;
+            box-shadow: 0 0 0 3px var(--accent-dim);
+        }
+        input.invalid, select.invalid {
+            border-color: var(--error-text);
+            box-shadow: 0 0 0 3px rgba(192,57,43,0.1);
+        }
+        input[type="date"] { cursor: pointer; }
+        select { cursor: pointer; color: var(--text); }
+        select option { color: var(--text); }
+
+        /* ── Radio buttons ── */
+        .radio-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 2px; }
+        .radio-option {
+            display: flex; align-items: center; gap: 7px;
+            padding: 9px 14px;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--r-sm);
+            cursor: pointer; font-size: 13px; font-weight: 500;
+            color: var(--text-2); flex: 1; min-width: 80px;
+            transition: all 0.15s;
+        }
+        .radio-option input[type="radio"] { display: none; }
+        .radio-option.selected {
+            background: var(--accent-dim);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .radio-dot {
+            width: 14px; height: 14px; border-radius: 50%;
+            border: 2px solid var(--text-3); flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.15s;
+        }
+        .radio-option.selected .radio-dot {
+            border-color: var(--accent);
+            background: var(--accent);
+        }
+        .radio-option.selected .radio-dot::after {
+            content: ''; width: 5px; height: 5px;
+            border-radius: 50%; background: #fff;
+        }
+
+        /* ── Submit button ── */
+        .submit-btn {
+            width: 100%; height: 50px; border: none;
+            border-radius: var(--r-sm); margin-top: 20px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px; font-weight: 600;
+            cursor: pointer; display: flex; align-items: center;
+            justify-content: center; gap: 8px;
+            transition: opacity 0.15s, transform 0.1s;
+            background: var(--accent); color: #fff;
+        }
+        .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .submit-btn:enabled:hover  { opacity: 0.88; }
+        .submit-btn:enabled:active { transform: scale(0.98); }
+
+        /* ── Success & Duplicate screens ── */
+        .success-screen  { display: none; }
+        .success-screen.show { display: block; }
+        .duplicate-screen { display: none; }
+        .duplicate-screen.show { display: block; }
+
+        .result-wrap { padding: 8px 0 4px; }
+
+        /* Top strip — coloured band with icon + title */
+        .result-strip {
+            border-radius: var(--r-md) var(--r-md) 0 0;
+            padding: 22px 20px 18px;
+            text-align: center;
+            margin: -26px -26px 0;
+        }
+        .result-strip.success { background: var(--success-bg); }
+        .result-strip.warning { background: var(--warning-bg); }
+        .result-strip-icon {
+            width: 52px; height: 52px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 12px;
+        }
+        .result-strip.success .result-strip-icon { background: rgba(45,106,45,0.15); }
+        .result-strip.warning .result-strip-icon { background: rgba(200,150,12,0.15); }
+        .result-strip-title { font-size: 19px; font-weight: 700; color: var(--text); }
+        .result-strip-sub   { font-size: 13px; color: var(--text-2); margin-top: 4px; }
+
+        /* Reg number hero */
+        .reg-hero {
+            border: 1.5px solid var(--border);
+            border-radius: var(--r-md);
+            padding: 20px; margin: 20px 0 0;
+            text-align: center; position: relative; overflow: hidden;
+        }
+        .reg-hero::before {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(135deg, var(--success-bg) 0%, transparent 60%);
+            opacity: 0.5;
+        }
+        .reg-hero.warning::before { background: linear-gradient(135deg, var(--warning-bg) 0%, transparent 60%); }
+        .reg-hero-label {
+            font-size: 10px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.1em; color: var(--text-3); margin-bottom: 8px;
+            position: relative;
+        }
+        .reg-hero-number {
+            font-family: 'DM Mono', monospace;
+            font-size: 30px; font-weight: 500;
+            color: var(--accent); letter-spacing: 0.04em;
+            position: relative;
+        }
+        .reg-hero.warning .reg-hero-number { color: var(--warning-text); }
+        .reg-hero-stream {
+            font-size: 12px; color: var(--text-3); margin-top: 6px;
+            position: relative;
+        }
+
+        /* Divider row */
+        .result-divider {
+            display: flex; align-items: center; gap: 10px;
+            margin: 18px 0 14px; color: var(--text-3); font-size: 11px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.06em;
+        }
+        .result-divider::before, .result-divider::after {
+            content: ''; flex: 1; height: 1px; background: var(--border);
+        }
+
+        /* Screenshot prompt */
+        .screenshot-prompt {
+            background: var(--warning-bg); border-radius: var(--r-sm);
+            padding: 12px 14px; display: flex; gap: 10px; align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        .screenshot-prompt svg { flex-shrink: 0; margin-top: 1px; }
+        .screenshot-prompt-text { font-size: 13px; color: var(--warning-text); line-height: 1.5; font-weight: 500; }
+
+        /* Next steps — card-style list */
+        .next-steps { display: flex; flex-direction: column; gap: 8px; }
+        .next-step-card {
+            display: flex; align-items: flex-start; gap: 12px;
+            background: var(--surface); border-radius: var(--r-sm);
+            padding: 11px 14px;
+        }
+        .step-num {
+            width: 22px; height: 22px; border-radius: 50%;
+            background: var(--accent-dim); color: var(--accent);
+            font-size: 11px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; margin-top: 1px;
+        }
+        .step-text { font-size: 13px; color: var(--text-2); line-height: 1.5; }
+
+        /* ── Status message ── */
+        .status-msg {
+            margin-top: 14px; padding: 12px 16px;
+            border-radius: var(--r-sm); font-size: 13px; font-weight: 500;
+            text-align: center; display: none; line-height: 1.5;
+        }
+        .status-msg.error   { background: var(--error-bg);   color: var(--error-text);   display: block; }
+        .status-msg.success { background: var(--success-bg); color: var(--success-text); display: block; }
+
+        @media (max-width: 420px) {
+            .card-body { padding: 20px; }
+            .card-header { padding: 20px 20px 16px; }
+            .field-grid-2 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+
+    <!-- Header -->
+    <div class="card-header">
+        <div class="brand">
+            <svg viewBox="0 0 1535.61 720.7" width="56" height="26" xmlns="http://www.w3.org/2000/svg">
+                <path fill="#7ac042" d="M0,693.1l17.76-27.95,78.77-14.93,39.53-55.38c77.39-18.85,157.19-33.28,236.48-44.4,298.97-41.95,607.51-36.4,904.31,19.14,48.81,9.13,92.27,16.51,137.14,38.78,15.07,7.48,54.7,29.33,64.06,41.87,6.62,8.87,11.26,24.98,17.82,34.63,6.09,3.05,24.83,2.93,29.31,6.17,1.19.86,10.43,20.26,10.44,21.53-8.4,1.77-17.28-.18-25.46-.53-172.91-7.3-345.62-20.92-518.95-15.98-120.92,3.45-242.02,15.47-362.82,21.05-167.22,7.73-335,2.5-501.9-11.03-42.2-3.42-84.32-8.22-126.47-11.98v-1Z"/>
+                <path fill="#26361b" d="M905.76,112.87v160.78c24.25-7.17,48.56-17.58,74.47-15.96,28.01,1.75,53.53,16.33,75.81,32.13,50,35.45,119.73,106.25,181.15,113.65,13.1,1.58,26.08-1.17,36.47,9.51,5.34,5.49,12.01,21.51,12.01,28.95v22.47l-64.98,1v45.94c-35.89-4.17-71.67-10.41-107.6-14.86-242.16-30.01-485.68-27.78-727.54,4.01-19.03,2.5-37.9,6.26-57.05,7.91-2.5-13.93-2.65-28.83-1.58-43h-41.99v-31.46c0-3.13,1.55-12.2,2.48-15.5,2.27-8.01,6.95-12.37,15.27-13.7,101.98-.92,204.14,1.97,304.17-19.72,86.33-18.72,163.38-55.83,243.75-90.56.54-17.23-.14-34.53.17-51.77.1-5.48-.09-10.99,0-16.48,15.76-35.82,32.94-71.42,50.13-106.71.93-1.91,1.92-4.24,3-5.99.46-.74,1.51-2.57,1.85-.64Z"/>
+                <path fill="#f6eb19" d="M850.78,242.7c-75.13,29.86-146.12,67.66-224.73,88.6-38.12,10.16-77.21,16.63-116.54,20.16l-1.47-1.58c-9.55-57.54-3.35-116.46,19.35-170.07C583.95,46.3,728.79-28.69,870.99,10.3c109.33,29.97,193.87,126.56,210.72,238.39-1.54.38-2.17-.63-3.28-1.2-7.95-4.12-16.61-11.38-25.03-15.94-30.39-16.47-65.95-25.9-100.59-19.82l-47.04-98.85c-.35-1.93-1.4-.09-1.85.64-1.08,1.75-2.07,4.08-3,5.99-17.19,35.29-34.37,70.89-50.13,106.71-.09,5.49.1,11,0,16.48Z"/>
+            </svg>
+            <div class="brand-divider"></div>
+            <div class="brand-text">
+                <span class="brand-name">House on the Rock Lagos</span>
+                <span class="brand-school">Rock Foundation School</span>
+            </div>
+        </div>
+        <div class="card-title">Student Registration</div>
+        <div class="card-sub">Register to join Rock Foundation School and receive your student number.</div>
+        <div class="stream-badge loading" id="streamBadge">Loading session…</div>
+    </div>
+
+    <!-- Registration form -->
+    <div class="card-body" id="formBody">
+
+        <!-- Personal Information -->
+        <div class="section-label">Personal Information</div>
+
+        <div class="field-grid-2">
+            <div class="field">
+                <label>Surname <span class="required-star">*</span></label>
+                <input type="text" id="surname" placeholder="Surname" autocomplete="family-name">
+                <span class="err-text" id="surnameErr"></span>
+            </div>
+            <div class="field">
+                <label>First Name <span class="required-star">*</span></label>
+                <input type="text" id="firstName" placeholder="First Name" autocomplete="given-name">
+                <span class="err-text" id="firstNameErr"></span>
+            </div>
+        </div>
+
+        <div class="field">
+            <label>Other Name</label>
+            <input type="text" id="otherName" placeholder="Middle name (optional)" autocomplete="additional-name">
+        </div>
+
+        <div class="field">
+            <label>Gender <span class="required-star">*</span></label>
+            <div class="radio-group" id="genderGroup">
+                <label class="radio-option" onclick="selectRadio('gender', 'Male', this)">
+                    <input type="radio" name="gender" value="Male">
+                    <span class="radio-dot"></span> Male
+                </label>
+                <label class="radio-option" onclick="selectRadio('gender', 'Female', this)">
+                    <input type="radio" name="gender" value="Female">
+                    <span class="radio-dot"></span> Female
+                </label>
+            </div>
+            <span class="err-text" id="genderErr"></span>
+        </div>
+
+        <!-- Contact -->
+        <div class="section-label">Contact Details</div>
+
+        <div class="field">
+            <label>Email Address <span class="required-star">*</span></label>
+            <input type="email" id="email" placeholder="yourname@email.com" autocomplete="email">
+            <span class="err-text" id="emailErr"></span>
+        </div>
+
+        <div class="field">
+            <label>Phone Number (WhatsApp) <span class="required-star">*</span></label>
+            <input type="tel" id="phone" placeholder="08090000090" autocomplete="tel">
+            <span class="hint">WhatsApp number preferably</span>
+            <span class="err-text" id="phoneErr"></span>
+        </div>
+
+        <!-- Church Background -->
+        <div class="section-label">Church Background</div>
+
+        <div class="field">
+            <label>When did you join House on the Rock? <span class="required-star">*</span></label>
+            <div style="position:relative;">
+                <input type="text" id="joinedHOTR" placeholder="MM/YYYY" maxlength="7"
+                       inputmode="numeric" autocomplete="off" style="padding-left:40px;"
+                       oninput="formatMonthYear(this)">
+                <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--text-3);" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="3" width="16" height="15" rx="2"/>
+                    <path d="M7 1v4M13 1v4M2 8h16"/>
+                </svg>
+            </div>
+            <span class="hint">Month and year only — e.g. 03/2019</span>
+            <span class="err-text" id="joinedErr"></span>
+        </div>
+
+        <div class="field">
+            <label>Have you attended NPOC class? <span class="required-star">*</span></label>
+            <div class="radio-group" id="npocGroup">
+                <label class="radio-option" onclick="selectRadio('npoc', 'Yes', this)">
+                    <input type="radio" name="npoc" value="Yes">
+                    <span class="radio-dot"></span> Yes
+                </label>
+                <label class="radio-option" onclick="selectRadio('npoc', 'No', this)">
+                    <input type="radio" name="npoc" value="No">
+                    <span class="radio-dot"></span> No
+                </label>
+            </div>
+            <span class="err-text" id="npocErr"></span>
+        </div>
+
+        <button class="submit-btn" id="submitBtn" onclick="handleSubmit()">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 16v-4a2 2 0 00-2-2H6a2 2 0 00-2 2v4"/><circle cx="10" cy="6" r="3"/>
+            </svg>
+            Register
+        </button>
+
+        <div class="status-msg" id="statusMsg"></div>
+    </div>
+
+    <!-- Success screen -->
+    <div class="card-body success-screen" id="successScreen">
+        <div class="result-wrap">
+            <div class="result-strip success">
+                <div class="result-strip-icon">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1A5C1A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                </div>
+                <div class="result-strip-title">Registration Successful!</div>
+                <div class="result-strip-sub" id="successName"></div>
+            </div>
+
+            <div class="reg-hero">
+                <div class="reg-hero-label">Your Registration Number</div>
+                <div class="reg-hero-number" id="successReg"></div>
+                <div class="reg-hero-stream" id="successStream"></div>
+            </div>
+
+            <div class="result-divider">What to do now</div>
+
+            <div class="screenshot-prompt">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7D5A00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
+                    <circle cx="12" cy="13" r="4"/>
+                </svg>
+                <span class="screenshot-prompt-text"><strong>Take a screenshot of this screen right now.</strong> You will need your registration number every time you sign in for class.</span>
+            </div>
+
+            <div class="next-steps">
+                <div class="next-step-card">
+                    <div class="step-num">1</div>
+                    <div class="step-text">Save your registration number — <strong id="nextReg"></strong></div>
+                </div>
+                <div class="next-step-card">
+                    <div class="step-num">2</div>
+                    <div class="step-text">Use your reg number to sign in at the entrance every class day.</div>
+                </div>
+                <div class="next-step-card">
+                    <div class="step-num">3</div>
+                    <div class="step-text">Lost your reg number? Contact admin with the email and phone number you registered with.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Duplicate screen -->
+    <div class="card-body duplicate-screen" id="duplicateScreen">
+        <div class="result-wrap">
+            <div class="result-strip warning">
+                <div class="result-strip-icon">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#7D5A00" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                </div>
+                <div class="result-strip-title">Already Registered</div>
+                <div class="result-strip-sub">Welcome back, <span id="dupName"></span>! We already have your record.</div>
+            </div>
+
+            <div class="reg-hero warning">
+                <div class="reg-hero-label">Your Registration Number</div>
+                <div class="reg-hero-number" id="dupReg"></div>
+                <div class="reg-hero-stream">Use this number to sign in on class days.</div>
+            </div>
+
+            <div class="result-divider">What to do</div>
+
+            <div class="screenshot-prompt">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7D5A00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
+                    <circle cx="12" cy="13" r="4"/>
+                </svg>
+                <span class="screenshot-prompt-text"><strong>Take a screenshot of this screen.</strong> Save your registration number — you will need it every time you sign in for class.</span>
+            </div>
+
+            <div class="next-steps">
+                <div class="next-step-card">
+                    <div class="step-num" style="background:rgba(200,150,12,0.12);color:var(--warning-text);">1</div>
+                    <div class="step-text">Your registration number above is the one to use going forward.</div>
+                </div>
+                <div class="next-step-card">
+                    <div class="step-num" style="background:rgba(200,150,12,0.12);color:var(--warning-text);">2</div>
+                    <div class="step-text">If you think this is a mistake, contact admin with the email you registered with.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbza6LYzhrNm483iLfOlt0xvMXbvvl_snNAyusSfYTl5RRb4Sb1EJ-VAvQIFwgN3s3oC/exec';
+
+// ── MM/YYYY formatter ─────────────────────────────────────────
+function formatMonthYear(input) {
+    let val = input.value.replace(/\D/g, ''); // digits only
+    if (val.length > 6) val = val.slice(0, 6);
+    if (val.length >= 3) val = val.slice(0, 2) + '/' + val.slice(2);
+    input.value = val;
+}
+
+function isValidMonthYear(val) {
+    if (!/^\d{2}\/\d{4}$/.test(val)) return false;
+    const parts = val.split('/');
+    const month = parseInt(parts[0], 10);
+    const year  = parseInt(parts[1], 10);
+    const now   = new Date();
+    if (month < 1 || month > 12) return false;
+    if (year < 1990 || year > now.getFullYear()) return false;
+    return true;
+}
+
+// ── State ──────────────────────────────────────────────────────
+const radioState = { gender: null, npoc: null };
+let   streamOpen = false;
+
+// ── Real-time email validation ─────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+    const emailInput = document.getElementById('email');
+    emailInput.addEventListener('input', function() {
+        const val = emailInput.value.trim();
+        if (val === '') { clearErr('emailErr'); return; }
+        if (!/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,6}$/.test(val)) {
+            showErr('emailErr', 'That doesn\'t look like a valid email address');
+        } else {
+            clearErr('emailErr');
+        }
+    });
+});
+
+// ── On load — fetch active stream ─────────────────────────────
+window.addEventListener('DOMContentLoaded', async function() {
+
+    const badge = document.getElementById('streamBadge');
+    try {
+        const res  = await fetch(SCRIPT_URL + '?action=get_active_stream&cb=' + Date.now());
+        const data = await res.json();
+        if (data.status === 'success') {
+            badge.textContent = data.class + ' · Year ' + data.year + ' · Stream ' + data.stream;
+            badge.className   = 'stream-badge';
+            streamOpen        = true;
+        } else {
+            badge.textContent = data.message || 'Registration currently closed';
+            badge.className   = 'stream-badge error';
+            document.getElementById('submitBtn').disabled = true;
+        }
+    } catch(e) {
+        badge.textContent = 'Could not load session info';
+        badge.className   = 'stream-badge error';
+    }
+});
+
+// ── Radio button handler ───────────────────────────────────────
+function selectRadio(group, value, el) {
+    radioState[group] = value;
+    const container = el.closest('.radio-group');
+    container.querySelectorAll('.radio-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    // Clear error
+    const errId = group === 'gender' ? 'genderErr' : 'npocErr';
+    document.getElementById(errId).classList.remove('show');
+}
+
+// ── Validation helpers ─────────────────────────────────────────
+function showErr(id, msg) {
+    const el = document.getElementById(id);
+    el.textContent = msg; el.classList.add('show');
+    const inputId = id.replace('Err', '');
+    const input = document.getElementById(inputId);
+    if (input) input.classList.add('invalid');
+    return false;
+}
+function clearErr(id) {
+    const el = document.getElementById(id);
+    el.classList.remove('show');
+    const inputId = id.replace('Err', '');
+    const input = document.getElementById(inputId);
+    if (input) input.classList.remove('invalid');
+}
+
+function validateAll() {
+    let valid = true;
+    ['surnameErr','firstNameErr','emailErr','phoneErr','joinedErr'].forEach(clearErr);
+    ['genderErr','npocErr'].forEach(id => document.getElementById(id).classList.remove('show'));
+
+    const surname   = document.getElementById('surname').value.trim();
+    const firstName = document.getElementById('firstName').value.trim();
+    const email     = document.getElementById('email').value.trim();
+    const phone     = document.getElementById('phone').value.trim();
+    const joined    = document.getElementById('joinedHOTR').value;
+
+    if (!surname)    { showErr('surnameErr',   'Please enter your surname');     valid = false; }
+    if (!firstName)  { showErr('firstNameErr', 'Please enter your first name');  valid = false; }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,6}$/.test(email))
+                     { showErr('emailErr',     'Please enter a valid email address'); valid = false; }
+    if (!phone || phone.replace(/\D/g,'').length < 10)
+                     { showErr('phoneErr',     'Please enter a valid phone number'); valid = false; }
+    if (!radioState.gender) {
+        document.getElementById('genderErr').textContent = 'Please select your gender';
+        document.getElementById('genderErr').classList.add('show');
+        valid = false;
+    }
+    if (!joined)                       { showErr('joinedErr', 'Please enter when you joined HOTR'); valid = false; }
+    else if (!isValidMonthYear(joined))  { showErr('joinedErr', 'Please enter a valid date as MM/YYYY — e.g. 03/2019'); valid = false; }
+    if (!radioState.npoc) {
+        document.getElementById('npocErr').textContent = 'Please answer this question';
+        document.getElementById('npocErr').classList.add('show');
+        valid = false;
+    }
+    return valid;
+}
+
+// ── Submit ─────────────────────────────────────────────────────
+async function handleSubmit() {
+    if (!streamOpen) return;
+    if (!validateAll()) return;
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled  = true;
+    btn.innerHTML = '<span style="font-size:14px">Registering…</span>';
+    document.getElementById('statusMsg').style.display = 'none';
+    document.getElementById('statusMsg').className = 'status-msg';
+
+    const params = new URLSearchParams({
+        action       : 'register',
+        surname      : document.getElementById('surname').value.trim(),
+        firstName    : document.getElementById('firstName').value.trim(),
+        otherName    : document.getElementById('otherName').value.trim(),
+        email        : document.getElementById('email').value.trim(),
+        phone        : document.getElementById('phone').value.trim(),
+        gender       : radioState.gender,
+        joinedHOTR   : document.getElementById('joinedHOTR').value,
+        attendedNPOC : radioState.npoc,
+        cb           : Date.now()
+    });
+
+    try {
+        const res  = await fetch(SCRIPT_URL + '?' + params.toString());
+        const data = await res.json();
+
+        if (data.status === 'success') {
+            // Show success screen
+            document.getElementById('formBody').style.display        = 'none';
+            document.getElementById('successScreen').classList.add('show');
+            document.getElementById('successName').textContent   = 'Welcome, ' + data.name + '!';
+            document.getElementById('successReg').textContent    = data.regNumber;
+            document.getElementById('successStream').textContent = data.stream;
+            document.getElementById('nextReg').textContent       = data.regNumber;
+
+        } else if (data.status === 'duplicate') {
+            // Show duplicate screen
+            document.getElementById('formBody').style.display = 'none';
+            document.getElementById('duplicateScreen').classList.add('show');
+            document.getElementById('dupReg').textContent  = data.regNumber;
+            // Personalise the title with their name from the database
+            const dupNameEl = document.getElementById('dupName');
+            if (dupNameEl && data.name) dupNameEl.textContent = data.name;
+
+        } else {
+            document.getElementById('statusMsg').textContent  = data.message || 'Registration failed. Please try again.';
+            document.getElementById('statusMsg').className    = 'status-msg error';
+            btn.disabled  = false;
+            btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16v-4a2 2 0 00-2-2H6a2 2 0 00-2 2v4"/><circle cx="10" cy="6" r="3"/></svg>Register';
+        }
+
+    } catch(err) {
+        document.getElementById('statusMsg').textContent = 'Connection error — please check your internet and try again.';
+        document.getElementById('statusMsg').className   = 'status-msg error';
+        btn.disabled  = false;
+        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16v-4a2 2 0 00-2-2H6a2 2 0 00-2 2v4"/><circle cx="10" cy="6" r="3"/></svg>Register';
+    }
+}
+</script>
+</body>
+</html>
