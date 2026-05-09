@@ -691,6 +691,7 @@ async function handleSubmit() {
             if (dupNameEl && data.name) dupNameEl.textContent = data.name;
 
         } else {
+            alert('DEBUG: ' + JSON.stringify(data));
             document.getElementById('statusMsg').textContent  = data.message || 'Registration failed. Please try again.';
             document.getElementById('statusMsg').className    = 'status-msg error';
             btn.disabled  = false;
