@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RFS Student Check-In</title>
+    <title>RFS Student Sign-In</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
@@ -380,7 +380,7 @@
                 <span class="brand-school">Rock Foundation School</span>
             </div>
         </div>
-        <h1 class="card-title" id="cardTitle">Student Check-In</h1>
+        <h1 class="card-title" id="cardTitle">Student Sign-In</h1>
         <div class="session-banner" id="sessionBanner"></div>
     </div>
 
@@ -409,10 +409,10 @@
         <div class="closed-screen" id="closedScreen">
             <div class="closed-icon">🔒</div>
             <div class="closed-title" id="closedTitle">Attendance window is closed</div>
-            <div class="closed-msg" id="closedMsg">Check-in is not currently open. Please wait for the session to begin.</div>
+            <div class="closed-msg" id="closedMsg">Sign-In is not currently open. Please wait for the session to begin.</div>
         </div>
 
-        <!-- Check-in form — shown when a window is active -->
+        <!-- Sign-In form — shown when a window is active -->
         <form id="checkInForm" novalidate>
 
             <!-- Online mode toggle -->
@@ -645,7 +645,7 @@ function applySessionStatus(data) {
     } else if (day === 6) {
         showClosed('Window closed', 'Saturday sign-in/sign-out is not currently open. Wait for admin to open it.');
     } else {
-        showClosed('No class today', 'Check-in is only available on Sundays and scheduled Saturdays.');
+        showClosed('No class today', 'Sign-In is only available on Sundays and scheduled Saturdays.');
     }
 }
 
@@ -655,8 +655,8 @@ function applySessionStatus(data) {
 function renderBanner(data) {
     const eventLabels = {
         'SUN'     : { label: 'Sunday Class',   cls: 'sun' },
-        'SAT-IN'  : { label: 'Saturday Check-In',  cls: 'sat-in' },
-        'SAT-OUT' : { label: 'Saturday Check-Out', cls: 'sat-out' },
+        'SAT-IN'  : { label: 'Saturday Sign-In',  cls: 'sat-in' },
+        'SAT-OUT' : { label: 'Saturday Sign-Out', cls: 'sat-out' },
         'CLOSED'  : { label: 'Closed',         cls: 'closed' }
     };
 
@@ -687,9 +687,9 @@ function showForm(eventType) {
     const subTxt = isOut ? 'Is this you? Confirm to proceed with Sign Out.' : 'Is this you? Confirm to proceed with Sign In.';
     document.querySelectorAll('#btnLabel, #checkinBtn span:last-child').forEach(function(el) { el.textContent = btnTxt; });
     document.querySelectorAll('#identitySubA, #identitySubB').forEach(function(el) { el.textContent = subTxt; });
-    if (eventType === 'SAT-OUT')     cardTitle.textContent = 'Saturday Check-Out';
-    else if (eventType === 'SAT-IN') cardTitle.textContent = 'Saturday Check-In';
-    else                             cardTitle.textContent = 'Student Check-In';
+    if (eventType === 'SAT-OUT')     cardTitle.textContent = 'Saturday Sign-Out';
+    else if (eventType === 'SAT-IN') cardTitle.textContent = 'Saturday Sign-In';
+    else                             cardTitle.textContent = 'Student Sign-In';
 }
 
 function showClosed(title, msg) {
@@ -1041,7 +1041,7 @@ checkinBtn.addEventListener('click', async function() {
             // Error — show message, hide identity card, reset to Stage 1 so they can try again
             identityCard.classList.remove('show');
             verifiedStudent = null;
-            showStatus('error', data.message || 'Check-in failed. Please try again.');
+            showStatus('error', data.message || 'Sign-In failed. Please try again.');
             confirmBtn.disabled  = false;
             confirmBtn.innerHTML = '<span class="btn-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="6" r="3"/><path d="M2 14c0-3 2.5-5 6-5s6 2 6 5"/></svg></span><span>Confirm Identity</span>';
             checkinBtn.disabled  = false;
