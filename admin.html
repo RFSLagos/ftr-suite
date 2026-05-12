@@ -1425,7 +1425,7 @@ input:focus, select:focus { outline: none; }
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11l-3 3-1.5-1.5"/></svg>
                     Attendance
                 </button>
-                <button class="nav-item" data-page="grouping" id="navGrouping" onclick="switchPage('grouping', this)" style="display:none;">
+                <button class="nav-item" data-page="grouping" id="navGrouping" onclick="switchPage('grouping', this)">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                     Grouping
                 </button>
@@ -1629,10 +1629,6 @@ input:focus, select:focus { outline: none; }
                         <p class="page-sub" id="attDateSub">Load a session to view attendance</p>
                     </div>
                     <div class="page-actions">
-                        <button class="btn btn-outline btn-sm" id="attGroupingBtn" style="display:none;" onclick="toggleMyGroupPanel()">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                            My Group
-                        </button>
                         <button class="btn btn-outline btn-sm" onclick="loadAttendance()">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.5 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.65 4.36A9 9 0 0 0 20.5 15"/></svg>
                             Refresh
@@ -1646,23 +1642,6 @@ input:focus, select:focus { outline: none; }
                     <button class="att-day-pill" onclick="setAttDay(1, this)">Yesterday</button>
                     <button class="att-day-pill" onclick="setAttDay(2, this)">2 Days Ago</button>
                     <button class="att-day-pill" onclick="setAttDay(3, this)">3 Days Ago</button>
-                </div>
-
-                <!-- My Group Panel — regular admins only -->
-                <div class="card my-group-panel" id="myGroupPanel" style="margin-bottom:14px;">
-                    <div class="card-head">
-                        <div class="card-head-text">
-                            <div class="card-title" id="myGroupTitle">My Group</div>
-                            <div class="card-sub" id="myGroupSub">Loading…</div>
-                        </div>
-                        <button class="btn btn-outline btn-sm" onclick="loadMyGroup()">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.5 15a9 9 0 1 1-.5-5"/></svg>
-                            Refresh
-                        </button>
-                    </div>
-                    <div class="card-body" id="myGroupList">
-                        <div class="att-empty">Tap Refresh to load your group.</div>
-                    </div>
                 </div>
 
                 <div class="card">
@@ -2002,6 +1981,24 @@ input:focus, select:focus { outline: none; }
                 </div>
 
                 <div class="page-content-wrap">
+
+                <!-- My Group Panel — regular admins, auto-loads on page open -->
+                <div class="card" id="myGroupPanel" style="display:none; margin-bottom:14px;">
+                    <div class="card-head">
+                        <div class="card-head-text">
+                            <div class="card-title" id="myGroupTitle">My Group</div>
+                            <div class="card-sub" id="myGroupSub">Loading…</div>
+                        </div>
+                        <button class="btn btn-outline btn-sm" onclick="loadMyGroup()">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.5 15a9 9 0 1 1-.5-5"/></svg>
+                            Refresh
+                        </button>
+                    </div>
+                    <div class="card-body" id="myGroupList">
+                        <div class="att-empty">Loading your group…</div>
+                    </div>
+                </div>
+
                 <div class="card" style="margin-bottom:14px;">
                     <div class="card-body">
                         <div class="field-label" style="margin-bottom:12px;">Groups</div>
@@ -2089,9 +2086,9 @@ input:focus, select:focus { outline: none; }
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11l-3 3-1.5-1.5"/></svg>
             Attend.
         </button>
-        <button class="mob-nav-item" onclick="openRailSlide()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><path d="M12 2a10 10 0 0 1 0 20"/><path d="M12 2a10 10 0 0 0 0 20"/><path d="M2 12h20"/></svg>
-            Activity
+        <button class="mob-nav-item" data-page="grouping" onclick="switchPage('grouping', this); mobNavSwitch(this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Groups
         </button>
     </nav>
 
@@ -2251,9 +2248,8 @@ function showApp() {
     document.getElementById('testToggle').style.display = (admin.role === 'Super Admin') ? 'inline-flex' : 'none';
     // Grouping nav + mobile FAB (Super Admin only)
     const isSuper = admin.role === 'Super Admin';
-    document.getElementById('navGrouping').style.display    = isSuper ? 'flex'  : 'none';
-    // Show My Group button only for regular admins — Super Admin uses the Grouping page
-    document.getElementById('attGroupingBtn').style.display = isSuper ? 'none' : 'inline-flex';
+    document.getElementById('navGrouping').style.display    = 'flex'; // visible to all admins
+
 
 
     // Initial loads
@@ -2296,8 +2292,24 @@ function switchPage(name, btn) {
     if (name === 'scores')      updateTopicList();
     if (name === 'permissions') { updateExcuseForm(); loadExcuses(); }
     if (name === 'grouping') {
-        loadGroupConfig();
-        if (admin && admin.role === 'Super Admin') loadGroupingSummary();
+        if (admin && admin.role === 'Super Admin') {
+            loadGroupConfig();
+            loadGroupingSummary();
+            // Hide my group panel for super admin
+            var mgp = document.getElementById('myGroupPanel');
+            if (mgp) mgp.style.display = 'none';
+        } else {
+            // Regular admin — show my group panel, hide super admin cards
+            var mgp2 = document.getElementById('myGroupPanel');
+            if (mgp2) { mgp2.style.display = 'block'; loadMyGroup(); }
+            var gc = document.getElementById('groupResultCard');
+            if (gc) gc.style.display = 'none';
+            var gs = document.getElementById('groupSummaryCard');
+            if (gs) gs.style.display = 'none';
+            // Hide group grid card (super admin only)
+            var gg = document.querySelector('#pageGrouping .page-content-wrap .card:first-child');
+            if (gg) gg.style.display = 'none';
+        }
     }
     if (name === 'scores')       { switchAssessTab('assessment'); loadAssessInfo(); }
 }
@@ -3545,22 +3557,7 @@ let myGroupCache = { students: [], tabName: '' };
 let myGroupVisible = false;
 
 function toggleMyGroupPanel() {
-    const panel = document.getElementById('myGroupPanel');
-    const btn   = document.getElementById('attGroupingBtn');
-    if (!panel) return;
-    myGroupVisible = !myGroupVisible;
-    if (myGroupVisible) {
-        panel.classList.add('show');
-        btn.style.background = 'var(--green-deep)';
-        btn.style.color      = '#fff';
-        btn.style.borderColor = 'var(--green-deep)';
-        loadMyGroup();
-    } else {
-        panel.classList.remove('show');
-        btn.style.background  = '';
-        btn.style.color       = '';
-        btn.style.borderColor = '';
-    }
+    // No longer used — My Group panel auto-loads via grouping page
 }
 
 async function loadMyGroup() {
