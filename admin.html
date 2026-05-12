@@ -2173,6 +2173,7 @@ function loadAdmin() {
 function clearAdmin() {
     sessionStorage.removeItem('rfs_admin');
     sessionStorage.removeItem('rfs_pass');
+    sessionStorage.removeItem('rfs_session_v2');
     admin = null;
 }
 function getStoredPass() {
@@ -2289,6 +2290,7 @@ function switchPage(name, btn) {
     // Lazy-load page data
     if (name === 'dashboard')   loadDashboard();
     if (name === 'attendance')  loadAttendance();
+    if (name === 'saturday')    { if (sessionData) updateSaturdayUI(sessionData); }
     if (name === 'scores')      updateTopicList();
     if (name === 'permissions') { updateExcuseForm(); loadExcuses(); }
     if (name === 'grouping') {
@@ -2326,49 +2328,41 @@ function switchPage(name, btn) {
 // ============================================================
 //  ACTIVE SESSION — combines get_active_stream + get_status
 // ============================================================
-async function autoLoadSession() {
-    setSessionDisplay({ loading: true });
-
-    // Step 1: get the active stream from the unified script.
-    // Falls back to legacy get_active_session if the new endpoint is missing.
-    let streamInfo = null;
-    try {
-        // Try new unified endpoint first
-        let res  = await fetch(SCRIPT_URL + '?action=get_active_stream&cb=' + Date.now());
-        let data = await res.json();
-        if (data.status === 'success') {
-            streamInfo = { className: data.class || data.className, year: data.year, stream: data.stream };
-        } else {
-            // Fallback: legacy bundled endpoint
-            res  = await fetch(SCRIPT_URL + '?action=get_active_session&cb=' + Date.now());
-            data = await res.json();
-            if (data.status === 'success') {
-                streamInfo = { className: data.className, year: data.year, stream: data.stream };
-                // legacy returns everything in one shot, so we keep it
-                applySessionData(Object.assign({}, data));
+async function autoLoadSession(forceRefresh) {
+    // ── Try cache first (instant) ─────────────────────────────
+    const CACHE_KEY = 'rfs_session_v2';
+    const cached    = sessionStorage.getItem(CACHE_KEY);
+    if (cached && !forceRefresh) {
+        try {
+            const parsed = JSON.parse(cached);
+            if (parsed && parsed.className) {
+                applySessionData(parsed);
+                // Refresh in background silently — no loading spinner
+                fetchAndCacheSession(CACHE_KEY);
                 return;
             }
+        } catch(e) { /* ignore bad cache */ }
+    }
+    // ── No cache — show loading and fetch ─────────────────────
+    setSessionDisplay({ loading: true });
+    await fetchAndCacheSession(CACHE_KEY);
+}
+
+async function fetchAndCacheSession(cacheKey) {
+    const CACHE_KEY = cacheKey || 'rfs_session_v2';
+    try {
+        // Single call to get_active_session — returns everything in one shot
+        const res  = await fetch(SCRIPT_URL + '?action=get_active_session&cb=' + Date.now());
+        const data = await res.json();
+        if (data.status === 'success') {
+            sessionStorage.setItem(CACHE_KEY, JSON.stringify(data));
+            applySessionData(data);
+        } else {
             setSessionDisplay({ error: data.message || 'No active session found.' });
-            return;
         }
     } catch(e) {
         setSessionDisplay({ error: 'Connection error — could not load session.' });
-        return;
     }
-
-    // Step 2: enrich with window/saturday status via get_status
-    let statusData = {};
-    try {
-        const url = SCRIPT_URL + '?action=get_status'
-            + '&class='  + encodeURIComponent(streamInfo.className)
-            + '&year='   + encodeURIComponent(streamInfo.year)
-            + '&stream=' + encodeURIComponent(streamInfo.stream)
-            + '&cb='     + Date.now();
-        const res  = await fetch(url);
-        statusData = await res.json();
-    } catch(e) { /* tolerate */ }
-
-    applySessionData(Object.assign({ status: 'success' }, streamInfo, statusData));
 }
 
 function applySessionData(data) {
@@ -2378,7 +2372,10 @@ function applySessionData(data) {
     document.getElementById('selStream').value = data.stream || '';
     setSessionDisplay({ data: data });
     updateSundayUI(data);
-    updateSaturdayUI(data);
+    // Saturday UI loaded lazily when Saturday page is opened
+    if (document.getElementById('pageSaturday').classList.contains('show')) {
+        updateSaturdayUI(data);
+    }
     updateTestModeUI(data.testMode);
     loadDashboard(); // refresh stats
 }
@@ -2545,6 +2542,7 @@ async function adminSunday(mode, code, loadingMsg, successMsg) {
         const res = await fetch(url); const data = await res.json();
         if (data.status === 'success') {
             showToast(successMsg || data.message, 'ok');
+            sessionStorage.removeItem('rfs_session_v2'); // invalidate cache
             // Update UI directly — don't re-fetch which could bring back
             // stale sunOpen=true from time window on a non-Sunday
             if (mode === 'FORCE-OPEN') {
