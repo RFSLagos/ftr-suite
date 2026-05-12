@@ -3695,21 +3695,54 @@ async function loadGroupingSummary() {
             body.innerHTML = '<div class="att-empty" style="color:var(--red-mid);">' + safeHtml(data.message || 'Failed.') + '</div>';
             return;
         }
-        var rows = (data.summary || []).map(function(g) {
-            return '<tr>'
-                + '<td>Group ' + g.group + '</td>'
-                + '<td>' + safeHtml(g.admin) + '</td>'
-                + '<td><span class="summary-num">' + g.total + '</span></td>'
-                + '<td><span class="summary-num">' + g.added + '</span></td>'
-                + '<td><span class="summary-num">' + g.followBus + '</span></td>'
-                + '<td><span class="summary-num">' + g.addedBus + '</span></td>'
-                + '</tr>';
-        }).join('');
-        var t = data.totals || {};
-        rows += '<tr><td colspan="2">Total</td><td>' + (t.total||0) + '</td><td>' + (t.added||0) + '</td><td>' + (t.followBus||0) + '</td><td>' + (t.addedBus||0) + '</td></tr>';
-        body.innerHTML = '<table class="summary-table">'
-            + '<thead><tr><th>Group</th><th>Admin</th><th>Students</th><th>Added</th><th>Bus</th><th>Bus Grp</th></tr></thead>'
-            + '<tbody>' + rows + '</tbody></table>';
+        var isMob = window.innerWidth < 890;
+        var html  = '';
+        if (isMob) {
+            // ── Mobile: stacked cards per group ──────────────
+            html = '<div style="display:flex; flex-direction:column; gap:10px;">';
+            (data.summary || []).forEach(function(g) {
+                var addedPct = g.total > 0 ? Math.round(g.added / g.total * 100) : 0;
+                html += '<div style="background:var(--surface); border-radius:var(--r-sm); padding:12px 14px;">'
+                    + '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">'
+                    + '<span style="font-weight:700; font-size:14px; color:var(--ink-1);">Group ' + g.group + '</span>'
+                    + '<span style="font-size:12px; color:var(--ink-3);">' + safeHtml(g.admin) + '</span>'
+                    + '</div>'
+                    + '<div style="display:flex; gap:8px; flex-wrap:wrap;">'
+                    + '<span style="font-size:12px; background:var(--green-wash); color:var(--green-deep); padding:3px 10px; border-radius:99px; font-weight:600;">' + g.total + ' students</span>'
+                    + '<span style="font-size:12px; background:' + (g.added === g.total && g.total > 0 ? 'var(--green-wash)' : 'var(--amber-wash,#FEF9E7)') + '; color:' + (g.added === g.total && g.total > 0 ? 'var(--green-deep)' : 'var(--amber,#C8960C)') + '; padding:3px 10px; border-radius:99px; font-weight:600;">' + g.added + '/' + g.total + ' added</span>'
+                    + '<span style="font-size:12px; background:var(--surface); color:var(--ink-2); padding:3px 10px; border-radius:99px; border:1px solid var(--line-soft); font-weight:600;">' + g.followBus + ' bus</span>'
+                    + '<span style="font-size:12px; background:var(--surface); color:var(--ink-2); padding:3px 10px; border-radius:99px; border:1px solid var(--line-soft); font-weight:600;">' + g.addedBus + ' bus grp</span>'
+                    + '</div></div>';
+            });
+            var t2 = data.totals || {};
+            html += '<div style="background:var(--green-dark,#1A5C1A); border-radius:var(--r-sm); padding:12px 14px;">'
+                + '<div style="font-weight:700; font-size:13px; color:#fff; margin-bottom:6px;">Total</div>'
+                + '<div style="display:flex; gap:8px; flex-wrap:wrap;">'
+                + '<span style="font-size:12px; background:rgba(255,255,255,0.15); color:#fff; padding:3px 10px; border-radius:99px; font-weight:600;">' + (t2.total||0) + ' students</span>'
+                + '<span style="font-size:12px; background:rgba(255,255,255,0.15); color:#fff; padding:3px 10px; border-radius:99px; font-weight:600;">' + (t2.added||0) + ' added</span>'
+                + '<span style="font-size:12px; background:rgba(255,255,255,0.15); color:#fff; padding:3px 10px; border-radius:99px; font-weight:600;">' + (t2.followBus||0) + ' bus</span>'
+                + '<span style="font-size:12px; background:rgba(255,255,255,0.15); color:#fff; padding:3px 10px; border-radius:99px; font-weight:600;">' + (t2.addedBus||0) + ' bus grp</span>'
+                + '</div></div>';
+            html += '</div>';
+        } else {
+            // ── Desktop: original table ───────────────────────
+            var rows = (data.summary || []).map(function(g) {
+                return '<tr>'
+                    + '<td>Group ' + g.group + '</td>'
+                    + '<td>' + safeHtml(g.admin) + '</td>'
+                    + '<td><span class="summary-num">' + g.total + '</span></td>'
+                    + '<td><span class="summary-num">' + g.added + '</span></td>'
+                    + '<td><span class="summary-num">' + g.followBus + '</span></td>'
+                    + '<td><span class="summary-num">' + g.addedBus + '</span></td>'
+                    + '</tr>';
+            }).join('');
+            var t = data.totals || {};
+            rows += '<tr><td colspan="2">Total</td><td>' + (t.total||0) + '</td><td>' + (t.added||0) + '</td><td>' + (t.followBus||0) + '</td><td>' + (t.addedBus||0) + '</td></tr>';
+            html = '<table class="summary-table">'
+                + '<thead><tr><th>Group</th><th>Admin</th><th>Students</th><th>Added</th><th>Bus</th><th>Bus Grp</th></tr></thead>'
+                + '<tbody>' + rows + '</tbody></table>';
+        }
+        body.innerHTML = html;
     } catch(e) {
         body.innerHTML = '<div class="att-empty" style="color:var(--red-mid);">Connection error.</div>';
     }
